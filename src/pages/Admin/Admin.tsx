@@ -7,14 +7,15 @@ import {
     Users, DollarSign, Home, Edit2, Save, X, ChevronDown
 } from "lucide-react";
 import { format } from "date-fns";
-import { getPackages, savePackages, defaultPackages, HavenPackage } from "../../data/packages";
+import { usePackages, savePackages, defaultPackages, HavenPackage } from "../../data/packages";
+import { useBlockedDates, setDatesBlocked } from "../../data/availability";
+import AvailabilityCalendar from "../../components/Availability/AvailabilityCalendar";
+import { parseDateInput, nightsBetween } from "../../utils/dates";
+import { auth } from "../../lib/firebase";
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut, User } from "firebase/auth";
 import { formatCurrency } from "../../utils/priceCalculator";
 import { images as imageData } from "../../data/images";
 import { siteConfig } from "../../config/siteConfig";
-
-// ── Auth ────────────────────────────────────────────────────
-const ADMIN_PASSWORD = "haven2024"; // Demo only — not real security
-const AUTH_KEY = "haven_admin_auth";
 
 // ── Sample booking data ────────────────────────────────────
 const BOOKINGS_KEY = "haven_bookings";
@@ -53,10 +54,10 @@ function getSampleBookings(): Booking[] {
 // ── Status badge ────────────────────────────────────────────
 function StatusBadge({ status }: { status: Booking["status"] }) {
     const colors: Record<string, string> = {
-        pending: "bg-amber-500/20 text-amber-800 dark:text-amber-300",
-        confirmed: "bg-green-500/20 text-green-800 dark:text-green-300",
-        cancelled: "bg-red-500/20 text-red-800 dark:text-red-300",
-        completed: "bg-blue-500/20 text-blue-800 dark:text-blue-300",
+        pending: "bg-amber-500/20 text-amber-400",
+        confirmed: "bg-green-500/20 text-green-400",
+        cancelled: "bg-red-500/20 text-red-400",
+        completed: "bg-blue-500/20 text-blue-400",
     };
     return (
         <span className={`inline-flex items-center px-2.5 py-0.5 text-xs font-medium rounded-full ${colors[status]}`}>
@@ -66,13 +67,22 @@ function StatusBadge({ status }: { status: Booking["status"] }) {
 }
 
 // ── Login screen ────────────────────────────────────────────
-function LoginScreen({ onLogin }: { onLogin: () => void }) {
+function LoginScreen() {
+    const [email, setEmail] = useState("");
     const [pw, setPw] = useState("");
     const [err, setErr] = useState("");
+    const [busy, setBusy] = useState(false);
 
-    const handleLogin = () => {
-        if (pw === ADMIN_PASSWORD) { onLogin(); }
-        else { setErr("Incorrect password"); }
+    const handleLogin = async () => {
+        if (!auth) { setErr("Firebase is not configured yet (see SETUP.md)."); return; }
+        setBusy(true);
+        try {
+            await signInWithEmailAndPassword(auth, email.trim(), pw);
+        } catch {
+            setErr("Incorrect email or password");
+        } finally {
+            setBusy(false);
+        }
     };
 
     return (
@@ -84,24 +94,20 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
                 animate={{ opacity: 1, y: 0 }}
             >
                 <p className="serif text-4xl font-light mb-1 text-center" style={{ color: "var(--color-text)" }}>
-                    <span style={{ color: "var(--color-accent-text)" }}>H</span>AVEN
+                    <span style={{ color: "var(--color-gold)" }}>H</span>AVEN
                 </p>
                 <p className="section-label text-center mb-8">Admin Dashboard</p>
                 <div className="space-y-4">
+                    <input type="email" className="haven-input" placeholder="Email" value={email}
+                        onChange={(e) => { setEmail(e.target.value); setErr(""); }} />
                     <input type="password" className="haven-input" placeholder="Password" value={pw}
                         onChange={(e) => { setPw(e.target.value); setErr(""); }}
                         onKeyDown={(e) => e.key === "Enter" && handleLogin()} />
-                    {err && <p className="text-red-600 dark:text-red-400 text-xs">{err}</p>}
-                    <button onClick={handleLogin} className="btn-primary w-full justify-center text-xs">
-                        Sign In
+                    {err && <p className="text-red-400 text-xs">{err}</p>}
+                    <button onClick={handleLogin} disabled={busy} className="btn-primary w-full justify-center text-xs">
+                        {busy ? "Signing in…" : "Sign In"}
                     </button>
                 </div>
-                <p className="text-xs text-center mt-4" style={{ color: "var(--color-text-muted)" }}>
-                    Demo password: <span className="font-mono" style={{ color: "var(--color-accent-text)" }}>haven2024</span>
-                </p>
-                <p className="text-xs text-center mt-2" style={{ color: "var(--color-text-muted)" }}>
-                    This is a demo admin — not real security.
-                </p>
                 <div className="text-center mt-6">
                     <Link to="/" className="text-xs hover:opacity-70 transition" style={{ color: "var(--color-text-muted)" }}>
                         ← Back to Website
@@ -112,10 +118,65 @@ function LoginScreen({ onLogin }: { onLogin: () => void }) {
     );
 }
 
+// ── Availability manager ────────────────────────────────────
+function AvailabilityManager() {
+    const blocked = useBlockedDates();
+    const [from, setFrom] = useState("");
+    const [to, setTo] = useState("");
+    const [msg, setMsg] = useState("");
+
+    const run = async (dates: string[], block: boolean) => {
+        try {
+            await setDatesBlocked(dates, block);
+            setMsg(block ? "Saved — dates are now shown as booked." : "Saved — dates are now available.");
+        } catch {
+            setMsg("Could not save. Check you are signed in and Firebase is set up.");
+        }
+        setTimeout(() => setMsg(""), 3000);
+    };
+
+    const rangeNights = () => {
+        const a = parseDateInput(from), b = parseDateInput(to);
+        return a && b && b > a ? nightsBetween(a, b) : [];
+    };
+
+    return (
+        <div className="max-w-xl">
+            <h2 className="serif text-2xl font-light mb-2" style={{ color: "var(--color-text)" }}>Availability</h2>
+            <p className="text-sm mb-6" style={{ color: "var(--color-text-muted)" }}>
+                Dates marked red are shown to guests as booked, instantly. Each date means that <b>night</b>.
+                (A guest checking out on the 14th can still be followed by a check-in on the 14th.)
+            </p>
+
+            <AvailabilityCalendar blocked={blocked} onToggle={(key, isBlocked) => run([key], !isBlocked)} />
+
+            <div className="mt-8 border p-5" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
+                <p className="text-sm mb-3" style={{ color: "var(--color-text)" }}>Block / unblock a whole stay</p>
+                <div className="grid grid-cols-2 gap-3">
+                    <div>
+                        <label className="text-xs mb-1 block" style={{ color: "var(--color-text-muted)" }}>Check-in</label>
+                        <input type="date" className="haven-input" value={from} onChange={(e) => setFrom(e.target.value)} style={{ colorScheme: "auto" }} />
+                    </div>
+                    <div>
+                        <label className="text-xs mb-1 block" style={{ color: "var(--color-text-muted)" }}>Check-out</label>
+                        <input type="date" className="haven-input" value={to} min={from} onChange={(e) => setTo(e.target.value)} style={{ colorScheme: "auto" }} />
+                    </div>
+                </div>
+                <div className="flex gap-3 mt-4">
+                    <button className="btn-primary text-xs" disabled={!rangeNights().length} onClick={() => run(rangeNights(), true)}>Mark booked</button>
+                    <button className="btn-outline text-xs" style={{ color: "var(--color-text)" }} disabled={!rangeNights().length} onClick={() => run(rangeNights(), false)}>Mark available</button>
+                </div>
+            </div>
+            {msg && <p className="text-xs mt-4" style={{ color: "var(--color-gold)" }}>{msg}</p>}
+        </div>
+    );
+}
+
 // ── Sidebar ─────────────────────────────────────────────────
 const sideLinks = [
-    // { id: "overview", label: "Overview", icon: <LayoutDashboard size={17} /> },
-    // { id: "bookings", label: "Bookings", icon: <Calendar size={17} /> },
+    { id: "overview", label: "Overview", icon: <LayoutDashboard size={17} /> },
+    { id: "bookings", label: "Bookings", icon: <Calendar size={17} /> },
+    { id: "availability", label: "Availability", icon: <Calendar size={17} /> },
     { id: "packages", label: "Packages", icon: <Package size={17} /> },
     { id: "content", label: "Content", icon: <Settings size={17} /> },
     { id: "images", label: "Images", icon: <Image size={17} /> },
@@ -130,7 +191,7 @@ function Overview({ bookings }: { bookings: Booking[] }) {
     const families = bookings.filter((b) => b.packageId === "family").length;
 
     const stats = [
-        { label: "Total Bookings", value: total, icon: <Calendar size={20} />, color: "var(--color-accent-text)" },
+        { label: "Total Bookings", value: total, icon: <Calendar size={20} />, color: "var(--color-gold)" },
         { label: "Upcoming", value: upcoming, icon: <Clock size={20} />, color: "#60a5fa" },
         { label: "Est. Revenue", value: formatCurrency(revenue), icon: <TrendingUp size={20} />, color: "#4ade80" },
         { label: "Couple Bookings", value: couples, icon: <Users size={20} />, color: "#f87171" },
@@ -174,7 +235,7 @@ function Overview({ bookings }: { bookings: Booking[] }) {
                                     <td style={{ color: "var(--color-text)" }}>{b.guestName}</td>
                                     <td style={{ color: "var(--color-text-muted)" }}>{b.packageName}</td>
                                     <td style={{ color: "var(--color-text-muted)" }}>{b.checkIn}</td>
-                                    <td style={{ color: "var(--color-accent-text)" }}>{formatCurrency(b.total)}</td>
+                                    <td style={{ color: "var(--color-gold)" }}>{formatCurrency(b.total)}</td>
                                     <td><StatusBadge status={b.status} /></td>
                                 </tr>
                             ))}
@@ -244,7 +305,7 @@ function BookingsManager({ bookings, setBookings }: { bookings: Booking[]; setBo
                                 <td style={{ color: "var(--color-text-muted)" }}>{b.checkIn}</td>
                                 <td style={{ color: "var(--color-text-muted)" }}>{b.checkOut}</td>
                                 <td style={{ color: "var(--color-text-muted)" }}>{b.nights}</td>
-                                <td style={{ color: "var(--color-accent-text)" }}>{formatCurrency(b.total)}</td>
+                                <td style={{ color: "var(--color-gold)" }}>{formatCurrency(b.total)}</td>
                                 <td><StatusBadge status={b.status} /></td>
                                 <td>
                                     <div className="flex gap-1">
@@ -318,18 +379,30 @@ function BookingsManager({ bookings, setBookings }: { bookings: Booking[]; setBo
 
 // ── Package manager ─────────────────────────────────────────
 function PackageManager() {
-    const [pkgs, setPkgs] = useState<HavenPackage[]>(getPackages());
+    const live = usePackages();
+    const [pkgs, setPkgs] = useState<HavenPackage[]>(live);
     const [editing, setEditing] = useState<string | null>(null);
     const [saved, setSaved] = useState(false);
+    const [error, setError] = useState("");
 
-    const save = () => {
-        savePackages(pkgs);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-        setEditing(null);
+    // Pick up the live data if it arrives after this screen opened
+    useEffect(() => { if (!editing) setPkgs(live); }, [live]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const persist = async (data: HavenPackage[]) => {
+        try {
+            await savePackages(data);
+            setError("");
+            setSaved(true);
+            setTimeout(() => setSaved(false), 2000);
+            setEditing(null);
+        } catch {
+            setError("Could not save. Check you are signed in and Firebase is set up.");
+        }
     };
 
-    const reset = () => { setPkgs(defaultPackages); savePackages(defaultPackages); };
+    const save = () => persist(pkgs);
+
+    const reset = () => { setPkgs(defaultPackages); persist(defaultPackages); };
 
     const updatePkg = (id: string, field: keyof HavenPackage, value: unknown) => {
         setPkgs((prev) => prev.map((p) => p.id === id ? { ...p, [field]: value } : p));
@@ -347,18 +420,19 @@ function PackageManager() {
                 </div>
             </div>
 
+            {error && <p className="text-red-400 text-xs mb-4">{error}</p>}
             <div className="grid md:grid-cols-2 gap-8">
                 {pkgs.map((pkg) => (
                     <div key={pkg.id} className="border p-8" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
                         <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
-                                {/* <span className="text-3xl">{pkg.emoji}</span> */}
+                                <span className="text-3xl">{pkg.emoji}</span>
                                 <div>
                                     <p className="font-medium" style={{ color: "var(--color-text)" }}>{pkg.name}</p>
                                     <p className="section-label">{pkg.id}</p>
                                 </div>
                             </div>
-                            <button onClick={() => setEditing(editing === pkg.id ? null : pkg.id)} style={{ color: "var(--color-accent-text)" }}>
+                            <button onClick={() => setEditing(editing === pkg.id ? null : pkg.id)} style={{ color: "var(--color-gold)" }}>
                                 <Edit2 size={16} />
                             </button>
                         </div>
@@ -522,22 +596,21 @@ function ImageSettings() {
 
 // ── Main Admin Dashboard ────────────────────────────────────
 export default function Admin() {
-    const [authenticated, setAuthenticated] = useState(() => !!localStorage.getItem(AUTH_KEY));
-    const [activeSection, setActiveSection] = useState("packages");
-    // const [bookings, setBookings] = useState<Booking[]>(getSampleBookings());
+    const [user, setUser] = useState<User | null>(null);
+    const [authChecked, setAuthChecked] = useState(!auth);
+    const [activeSection, setActiveSection] = useState("overview");
+    const [bookings, setBookings] = useState<Booking[]>(getSampleBookings());
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const handleLogin = () => {
-        localStorage.setItem(AUTH_KEY, "1");
-        setAuthenticated(true);
-    };
+    useEffect(() => {
+        if (!auth) return;
+        return onAuthStateChanged(auth, (u) => { setUser(u); setAuthChecked(true); });
+    }, []);
 
-    const handleLogout = () => {
-        localStorage.removeItem(AUTH_KEY);
-        setAuthenticated(false);
-    };
+    const handleLogout = () => { if (auth) signOut(auth); };
 
-    if (!authenticated) return <LoginScreen onLogin={handleLogin} />;
+    if (!authChecked) return null;
+    if (!user) return <LoginScreen />;
 
     return (
         <div className="min-h-screen flex" style={{ background: "var(--color-bg)" }}>
@@ -545,7 +618,7 @@ export default function Admin() {
             <div className="hidden lg:flex flex-col w-60 border-r shrink-0" style={{ borderColor: "var(--color-border)", background: "var(--color-bg-alt)" }}>
                 <div className="p-6 border-b" style={{ borderColor: "var(--color-border)" }}>
                     <p className="serif text-2xl font-light tracking-widest" style={{ color: "var(--color-text)" }}>
-                        <span style={{ color: "var(--color-accent-text)" }}>H</span>AVEN
+                        <span style={{ color: "var(--color-gold)" }}>H</span>AVEN
                     </p>
                     <p className="section-label mt-0.5">Admin Panel</p>
                 </div>
@@ -555,7 +628,7 @@ export default function Admin() {
                             className={`w-full flex items-center gap-3 px-4 py-3 text-sm text-left transition-all duration-200 ${activeSection === link.id ? "border-l-2" : "opacity-60 hover:opacity-100"}`}
                             style={{
                                 borderColor: activeSection === link.id ? "var(--color-gold)" : "transparent",
-                                color: activeSection === link.id ? "var(--color-accent-text)" : "var(--color-text)",
+                                color: activeSection === link.id ? "var(--color-gold)" : "var(--color-text)",
                                 background: activeSection === link.id ? "var(--color-border)" : "transparent",
                             }}>
                             {link.icon} {link.label}
@@ -596,8 +669,9 @@ export default function Admin() {
                             exit={{ opacity: 0, y: -16 }}
                             transition={{ duration: 0.3 }}
                         >
-                            {/* {activeSection === "overview" && <Overview bookings={bookings} />}
-                            {activeSection === "bookings" && <BookingsManager bookings={bookings} setBookings={setBookings} />} */}
+                            {activeSection === "overview" && <Overview bookings={bookings} />}
+                            {activeSection === "bookings" && <BookingsManager bookings={bookings} setBookings={setBookings} />}
+                            {activeSection === "availability" && <AvailabilityManager />}
                             {activeSection === "packages" && <PackageManager />}
                             {activeSection === "content" && <ContentSettings />}
                             {activeSection === "images" && <ImageSettings />}

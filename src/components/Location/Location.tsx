@@ -17,15 +17,15 @@ export default function Location() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Find Us</p>
-                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        Find Your Way to <em className="grad-em">Haven</em>
+                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        Find Your Way to <em style={{ color: "var(--color-gold)" }}>Haven</em>
                     </h2>
                 </motion.div>
 
                 <div className="grid lg:grid-cols-2 gap-12 items-start">
                     {/* Map placeholder */}
                     <motion.div
-                        className="relative overflow-hidden h-80 lg:h-96 rounded-2xl"
+                        className="relative overflow-hidden h-80 lg:h-96"
                         initial={{ opacity: 0, x: -40 }}
                         animate={inView ? { opacity: 1, x: 0 } : {}}
                         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
@@ -34,7 +34,7 @@ export default function Location() {
                         {/* Map placeholder — replace with Google Maps embed or real map */}
                         <div className="w-full h-full flex flex-col items-center justify-center"
                             style={{ background: "var(--color-surface)" }}>
-                            <MapPin size={48} style={{ color: "var(--color-accent-text)", opacity: 0.5 }} className="mb-4" />
+                            <MapPin size={48} style={{ color: "var(--color-gold)", opacity: 0.5 }} className="mb-4" />
                             <p className="serif text-xl" style={{ color: "var(--color-text-muted)" }}>Map Coming Soon</p>
                             <p className="text-xs mt-2 text-center max-w-xs px-4" style={{ color: "var(--color-text-muted)" }}>
                                 {siteConfig.location}
@@ -52,9 +52,9 @@ export default function Location() {
                         animate={inView ? { opacity: 1, x: 0 } : {}}
                         transition={{ duration: 0.9, delay: 0.2, ease: [0.22, 1, 0.36, 1] }}
                     >
-                        <div className="p-6 border card-glow" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
+                        <div className="p-6 border" style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}>
                             <div className="flex items-start gap-4">
-                                <MapPin size={20} style={{ color: "var(--color-accent-text)" }} className="shrink-0 mt-0.5" />
+                                <MapPin size={20} style={{ color: "var(--color-gold)" }} className="shrink-0 mt-0.5" />
                                 <div>
                                     <p className="section-label mb-1">Location</p>
                                     <p className="text-sm leading-relaxed" style={{ color: "var(--color-text)" }}>

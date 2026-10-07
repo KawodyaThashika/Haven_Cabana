@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import Navbar from "../../components/Navbar/Navbar";
 import Hero from "../../components/Hero/Hero";
 import BookingBar from "../../components/BookingBar/BookingBar";
-// import Marquee from "../../components/Marquee/Marquee";
 import About from "../../components/About/About";
 import Features from "../../components/Features/Features";
 import Experience from "../../components/Experience/Experience";
@@ -42,12 +41,10 @@ export default function Home() {
             {/* Hero + Booking bar */}
             <div className="relative">
                 <Hero onBookNow={() => openBooking()} onExplore={handleExplore} />
-                <div className="relative z-10 -mt-24 pb-10 pt-0">
+                <div className="relative z-10 -mt-8 pb-8 pt-0">
                     <BookingBar onSearch={(data) => openBooking(data.packageId)} />
                 </div>
             </div>
-
-            {/* <Marquee /> */}
 
             <About />
             <Features />

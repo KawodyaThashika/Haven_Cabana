@@ -51,8 +51,8 @@ function FAQItem({ q, a, isOpen, onToggle }: { q: string; a: string; isOpen: boo
                     {q}
                 </span>
                 <motion.span
-                    style={{ color: "var(--color-accent-text)" }}
-                    animate={{ rotate: 0 }}
+                    style={{ color: "var(--color-gold)" }}
+                    animate={{ rotate: isOpen ? 45 : 0 }}
                     transition={{ duration: 0.25 }}
                 >
                     {isOpen ? <Minus size={18} /> : <Plus size={18} />}
@@ -91,8 +91,8 @@ export default function FAQ() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Questions</p>
-                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        Frequently Asked <em className="grad-em">Questions</em>
+                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        Frequently Asked <em style={{ color: "var(--color-gold)" }}>Questions</em>
                     </h2>
                 </motion.div>
 

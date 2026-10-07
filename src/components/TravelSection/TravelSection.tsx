@@ -32,9 +32,9 @@ export default function TravelSection({ onPlanStay }: TravelSectionProps) {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Discover Sri Lanka</p>
-                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light mb-6" style={{ color: "var(--color-text)" }}>
+                    <h2 className="serif text-4xl md:text-5xl font-light mb-6" style={{ color: "var(--color-text)" }}>
                         Your Sri Lankan Adventure<br />
-                        <em className="grad-em">Starts Here</em>
+                        <em style={{ color: "var(--color-gold)" }}>Starts Here</em>
                     </h2>
                     <p className="leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
                         From misty mountains to golden beaches, ancient cities to wild national parks,
@@ -82,7 +82,7 @@ function DestCard({ dest, index, inView }: {
 }) {
     return (
         <motion.div
-            className="relative overflow-hidden group cursor-default h-64 rounded-2xl shadow-lg"
+            className="relative overflow-hidden group cursor-default h-64"
             initial={{ opacity: 0, y: 30 }}
             animate={inView ? { opacity: 1, y: 0 } : {}}
             transition={{ delay: 0.06 * index, duration: 0.7 }}
@@ -92,11 +92,10 @@ function DestCard({ dest, index, inView }: {
                 alt={`Sri Lanka ${dest.label}`}
                 className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
             />
-            <div className="absolute inset-0" style={{ background: "linear-gradient(to top, rgba(4,34,42,0.88) 0%, rgba(4,34,42,0.25) 55%, transparent 100%)" }} />
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 mix-blend-soft-light" style={{ background: "linear-gradient(135deg, #14a3a8, #ffb703)" }} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
             <div className="absolute bottom-0 left-0 right-0 p-5">
-                <h3 className="serif text-2xl text-white" style={{ fontWeight: 600, textShadow: "0 2px 10px rgba(0,0,0,0.5)" }}>{dest.label}</h3>
-                <p className="text-white text-xs mt-1 font-sans font-medium md:opacity-0 group-hover:opacity-100 transition-all duration-300 md:translate-y-2 group-hover:translate-y-0">
+                <h3 className="serif text-xl font-light text-white">{dest.label}</h3>
+                <p className="text-white/60 text-xs mt-1 font-sans opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     {dest.desc}
                 </p>
             </div>

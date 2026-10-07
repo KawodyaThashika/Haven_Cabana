@@ -25,12 +25,6 @@ export default function Navbar({ onBookNow }: NavbarProps) {
     const [scrollPct, setScrollPct] = useState(0);
     const location = useLocation();
 
-    // Over the dark hero photo (before scrolling) the bar uses white text;
-    // once scrolled (glass bar) or when the mobile menu is open it uses theme text.
-    const onDark = !scrolled && !menuOpen;
-    const textColor = onDark ? "#ffffff" : "var(--color-text)";
-    const mutedColor = onDark ? "rgba(255,255,255,0.88)" : "var(--color-text-muted)";
-
     useEffect(() => {
         const onScroll = () => {
             const sy = window.scrollY;
@@ -61,7 +55,7 @@ export default function Navbar({ onBookNow }: NavbarProps) {
             />
 
             <motion.nav
-                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "glass shadow-lg shadow-black/10 py-3" : "bg-gradient-to-b from-black/40 to-transparent py-5"
+                className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${scrolled ? "glass shadow-lg shadow-black/10 py-3" : "bg-transparent py-5"
                     }`}
                 initial={{ y: -80 }}
                 animate={{ y: 0 }}
@@ -71,11 +65,11 @@ export default function Navbar({ onBookNow }: NavbarProps) {
                     {/* Logo */}
                     <Link
                         to="/"
-                        className="serif font-semibold tracking-[0.25em] text-2xl select-none"
-                        style={{ color: textColor, textShadow: onDark ? "0 2px 12px rgba(0,0,0,0.45)" : "none" }}
+                        className="serif font-light tracking-[0.25em] text-2xl select-none"
+                        style={{ color: "var(--color-text)" }}
                         onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
                     >
-                        <span style={{ color: onDark ? "#ffc42e" : "var(--color-gold-deep)" }}>H</span>AVEN
+                        <span style={{ color: "var(--color-gold)" }}>H</span>AVEN
                     </Link>
 
                     {/* Desktop nav */}
@@ -84,13 +78,13 @@ export default function Navbar({ onBookNow }: NavbarProps) {
                             <li key={link.label}>
                                 <button
                                     onClick={() => handleNavClick(link.href)}
-                                    className="relative text-xs tracking-widest uppercase font-sans font-semibold group transition-colors duration-200 hover:!text-[var(--color-gold)]"
-                                    style={{ color: mutedColor, textShadow: onDark ? "0 1px 8px rgba(0,0,0,0.5)" : "none" }}
+                                    className="relative text-xs tracking-widest uppercase font-sans font-medium group transition-colors duration-200"
+                                    style={{ color: "var(--color-text-muted)" }}
                                 >
                                     {link.label}
                                     <span
-                                        className="absolute -bottom-1 left-0 h-0.5 w-0 group-hover:w-full transition-all duration-300 rounded-full"
-                                        style={{ background: "var(--grad-sun)" }}
+                                        className="absolute -bottom-0.5 left-0 h-px w-0 group-hover:w-full transition-all duration-300"
+                                        style={{ background: "var(--color-gold)" }}
                                     />
                                 </button>
                             </li>
@@ -102,8 +96,8 @@ export default function Navbar({ onBookNow }: NavbarProps) {
                         {/* Theme toggle */}
                         <motion.button
                             onClick={toggleTheme}
-                            className="w-10 h-10 flex items-center justify-center rounded-full transition-colors duration-200"
-                            style={{ color: textColor, background: onDark ? "rgba(255,255,255,0.14)" : "var(--color-bg-alt)" }}
+                            className="w-9 h-9 flex items-center justify-center rounded-full transition-colors duration-200"
+                            style={{ color: "var(--color-text-muted)" }}
                             whileTap={{ scale: 0.85 }}
                             whileHover={{ scale: 1.1 }}
                             aria-label="Toggle theme"
@@ -122,21 +116,19 @@ export default function Navbar({ onBookNow }: NavbarProps) {
                         </motion.button>
 
                         {/* Book now — desktop */}
-                        <div className="hidden lg:block">
-                            <motion.button
-                                onClick={onBookNow}
-                                className="btn-primary text-xs"
-                                whileHover={{ scale: 1.02 }}
-                                whileTap={{ scale: 0.97 }}
-                            >
-                                Book Your Stay
-                            </motion.button>
-                        </div>
+                        <motion.button
+                            onClick={onBookNow}
+                            className="hidden lg:flex btn-primary text-xs"
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.97 }}
+                        >
+                            Book Your Stay
+                        </motion.button>
 
                         {/* Hamburger — mobile */}
                         <button
                             className="lg:hidden w-9 h-9 flex items-center justify-center"
-                            style={{ color: textColor }}
+                            style={{ color: "var(--color-text)" }}
                             onClick={() => setMenuOpen((o) => !o)}
                             aria-label="Toggle menu"
                         >

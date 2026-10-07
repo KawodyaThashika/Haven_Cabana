@@ -3,7 +3,8 @@ import { motion, AnimatePresence } from "framer-motion";
 import { X, ChevronLeft, ArrowRight, Check } from "lucide-react";
 import { format } from "date-fns";
 import { useBooking } from "../../hooks/useBooking";
-import { getPackages } from "../../data/packages";
+import AvailabilityCalendar from "../Availability/AvailabilityCalendar";
+import { parseDateInput } from "../../utils/dates";
 import { formatCurrency } from "../../utils/priceCalculator";
 import { generateWhatsAppMessage, openWhatsApp } from "../../utils/whatsapp";
 
@@ -16,7 +17,7 @@ interface BookingModalProps {
 const inputClass = "haven-input";
 
 export default function BookingModal({ isOpen, onClose, initialPackageId }: BookingModalProps) {
-    const { state, packages, updateField, goToSummary, goBack, markSent, reset } = useBooking(initialPackageId);
+    const { state, packages, blockedDates, unavailable, updateField, goToSummary, goBack, markSent, reset } = useBooking(initialPackageId);
     const { formData, selectedPackage, nights, priceBreakdown, errors, step } = state;
 
     const countries = [
@@ -116,19 +117,19 @@ export default function BookingModal({ isOpen, onClose, initialPackageId }: Book
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>Full Name *</label>
                                                     <input className={inputClass} placeholder="John Doe" value={formData.guestName}
                                                         onChange={(e) => updateField("guestName", e.target.value)} />
-                                                    {errors.guestName && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.guestName}</p>}
+                                                    {errors.guestName && <p className="text-red-400 text-xs mt-1">{errors.guestName}</p>}
                                                 </div>
                                                 <div>
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>WhatsApp Number *</label>
                                                     <input className={inputClass} placeholder="+94 XX XXX XXXX" value={formData.whatsapp}
                                                         onChange={(e) => updateField("whatsapp", e.target.value)} />
-                                                    {errors.whatsapp && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.whatsapp}</p>}
+                                                    {errors.whatsapp && <p className="text-red-400 text-xs mt-1">{errors.whatsapp}</p>}
                                                 </div>
                                                 <div>
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>Email *</label>
                                                     <input className={inputClass} type="email" placeholder="your@email.com" value={formData.email}
                                                         onChange={(e) => updateField("email", e.target.value)} />
-                                                    {errors.email && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.email}</p>}
+                                                    {errors.email && <p className="text-red-400 text-xs mt-1">{errors.email}</p>}
                                                 </div>
                                                 <div>
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>Country *</label>
@@ -137,7 +138,7 @@ export default function BookingModal({ isOpen, onClose, initialPackageId }: Book
                                                         <option value="">Select country</option>
                                                         {countries.map((c) => <option key={c} value={c}>{c}</option>)}
                                                     </select>
-                                                    {errors.country && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.country}</p>}
+                                                    {errors.country && <p className="text-red-400 text-xs mt-1">{errors.country}</p>}
                                                 </div>
                                             </div>
                                         </div>
@@ -151,30 +152,37 @@ export default function BookingModal({ isOpen, onClose, initialPackageId }: Book
                                                     <select className={inputClass} value={formData.packageId}
                                                         onChange={(e) => updateField("packageId", e.target.value)}>
                                                         <option value="">Select package</option>
-                                                        {packages.map((p) => <option key={p.id} value={p.id}>{p.name}</option>)}
+                                                        {packages.map((p) => <option key={p.id} value={p.id}>{p.emoji} {p.name}</option>)}
                                                     </select>
-                                                    {errors.packageId && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.packageId}</p>}
+                                                    {errors.packageId && <p className="text-red-400 text-xs mt-1">{errors.packageId}</p>}
                                                 </div>
                                                 <div>
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>Guests *</label>
                                                     <input className={inputClass} type="number" min={1} max={4} value={formData.guests}
                                                         onChange={(e) => updateField("guests", Number(e.target.value))} />
-                                                    {errors.guests && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{errors.guests}</p>}
+                                                    {errors.guests && <p className="text-red-400 text-xs mt-1">{errors.guests}</p>}
                                                 </div>
                                                 <div>
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>Check-in *</label>
                                                     <input className={inputClass} type="date" min={today} value={toVal(formData.checkIn)}
-                                                        onChange={(e) => updateField("checkIn", new Date(e.target.value))}
+                                                        onChange={(e) => updateField("checkIn", parseDateInput(e.target.value))}
                                                         style={{ colorScheme: "auto" }} />
-                                                    {(errors as any).checkIn && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{(errors as any).checkIn}</p>}
+                                                    {(errors as any).checkIn && <p className="text-red-400 text-xs mt-1">{(errors as any).checkIn}</p>}
                                                 </div>
                                                 <div>
                                                     <label className="text-xs mb-1.5 block" style={{ color: "var(--color-text-muted)" }}>Check-out *</label>
                                                     <input className={inputClass} type="date" min={toVal(formData.checkIn) || today} value={toVal(formData.checkOut)}
-                                                        onChange={(e) => updateField("checkOut", new Date(e.target.value))}
+                                                        onChange={(e) => updateField("checkOut", parseDateInput(e.target.value))}
                                                         style={{ colorScheme: "auto" }} />
-                                                    {(errors as any).checkOut && <p className="text-red-600 dark:text-red-400 text-xs mt-1">{(errors as any).checkOut}</p>}
+                                                    {(errors as any).checkOut && <p className="text-red-400 text-xs mt-1">{(errors as any).checkOut}</p>}
                                                 </div>
+                                            </div>
+                                            {unavailable && !(errors as any).checkIn && (
+                                                <p className="text-red-400 text-xs mt-3">Some of these dates are already booked. Please pick other dates.</p>
+                                            )}
+                                            <div className="mt-5">
+                                                <p className="text-xs mb-2" style={{ color: "var(--color-text-muted)" }}>Availability</p>
+                                                <AvailabilityCalendar blocked={blockedDates} />
                                             </div>
                                         </div>
 
@@ -184,7 +192,7 @@ export default function BookingModal({ isOpen, onClose, initialPackageId }: Book
                                                 <p className="text-sm mb-2" style={{ color: "var(--color-text-muted)" }}>
                                                     {selectedPackage?.name} · {formatCurrency(selectedPackage!.pricePerNight)} × {nights} night{nights > 1 ? "s" : ""}
                                                 </p>
-                                                <p className="serif text-3xl" style={{ color: "var(--color-accent-text)" }}>
+                                                <p className="serif text-3xl" style={{ color: "var(--color-gold)" }}>
                                                     Total: {formatCurrency(priceBreakdown.total)}
                                                 </p>
                                             </div>
@@ -228,7 +236,7 @@ export default function BookingModal({ isOpen, onClose, initialPackageId }: Book
                                             ))}
                                             <div className="flex justify-between items-center pt-5">
                                                 <span className="text-xs tracking-widest uppercase font-sans font-semibold" style={{ color: "var(--color-text-muted)" }}>Total</span>
-                                                <span className="serif text-2xl" style={{ color: "var(--color-accent-text)" }}>{formatCurrency(priceBreakdown.total)}</span>
+                                                <span className="serif text-2xl" style={{ color: "var(--color-gold)" }}>{formatCurrency(priceBreakdown.total)}</span>
                                             </div>
                                         </div>
 

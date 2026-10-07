@@ -92,8 +92,8 @@ export default function Experience() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">The Experience</p>
-                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        The <em className="grad-em">Haven</em> Experience
+                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        The <em style={{ color: "var(--color-gold)" }}>Haven</em> Experience
                     </h2>
                 </motion.div>
             </div>

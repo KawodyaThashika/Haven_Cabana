@@ -40,10 +40,8 @@ export default function Features() {
     const inView = useInView(ref, { once: true, margin: "-80px" });
 
     return (
-        <section id="experience" className="relative overflow-hidden py-24 lg:py-36" ref={ref} style={{ background: "var(--color-bg-alt)" }}>
-            <div className="blob w-96 h-96 -top-20 -left-24" style={{ background: "#14a3a8" }} />
-            <div className="blob w-80 h-80 bottom-0 -right-20" style={{ background: "#ffb703", animationDelay: "-5s" }} />
-            <div className="relative max-w-7xl mx-auto px-6">
+        <section id="experience" className="py-24 lg:py-36" ref={ref} style={{ background: "var(--color-bg-alt)" }}>
+            <div className="max-w-7xl mx-auto px-6">
                 {/* Heading */}
                 <motion.div
                     className="text-center max-w-xl mx-auto mb-20"
@@ -52,8 +50,8 @@ export default function Features() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Why Haven</p>
-                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        Why Stay at <em className="grad-em">Haven?</em>
+                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        Why Stay at <em style={{ color: "var(--color-gold)" }}>Haven?</em>
                     </h2>
                 </motion.div>
 
@@ -62,7 +60,7 @@ export default function Features() {
                     {features.map((f, i) => (
                         <motion.div
                             key={f.title}
-                            className="group p-8 border card-glow cursor-default"
+                            className="group p-8 border transition-all duration-500 hover:shadow-2xl cursor-default"
                             style={{
                                 borderColor: "var(--color-border)",
                                 background: "var(--color-surface)",
@@ -72,9 +70,13 @@ export default function Features() {
                             transition={{ delay: i * 0.08, duration: 0.7 }}
                             whileHover={{ y: -6 }}
                         >
-                            <div className="icon-bubble mb-6">
+                            <motion.div
+                                className="mb-6 transition-colors duration-300"
+                                style={{ color: "var(--color-gold)" }}
+                                whileHover={{ scale: 1.1 }}
+                            >
                                 {f.icon}
-                            </div>
+                            </motion.div>
                             <h3 className="serif text-xl font-medium mb-3" style={{ color: "var(--color-text)" }}>
                                 {f.title}
                             </h3>

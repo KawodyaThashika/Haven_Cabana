@@ -50,8 +50,8 @@ export default function Gallery() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Gallery</p>
-                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        A Glimpse of <em style={{ color: "var(--color-gold)" }}>Haven</em>
+                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        A Glimpse of <em className="grad-em">Haven</em>
                     </h2>
                 </motion.div>
 
@@ -66,7 +66,7 @@ export default function Gallery() {
                         <button
                             key={cat.value}
                             onClick={() => setActive(cat.value)}
-                            className={`px-5 py-2 text-xs tracking-widest uppercase font-sans font-medium transition-all duration-300 border ${active === cat.value ? "text-[#1c1c1c]" : ""
+                            className={`px-5 py-2 rounded-full text-xs tracking-widest uppercase font-sans font-semibold transition-all duration-300 border ${active === cat.value ? "text-[#1c1c1c]" : ""
                                 }`}
                             style={{
                                 background: active === cat.value ? "var(--color-gold)" : "transparent",

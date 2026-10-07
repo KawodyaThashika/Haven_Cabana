@@ -1,7 +1,7 @@
 import React, { useRef } from "react";
 import { motion, useInView } from "framer-motion";
 import { Check, ArrowRight } from "lucide-react";
-import { usePackages } from "../../data/packages";
+import { getPackages } from "../../data/packages";
 import { formatCurrency } from "../../utils/priceCalculator";
 
 interface PackagesProps {
@@ -9,7 +9,7 @@ interface PackagesProps {
 }
 
 export default function Packages({ onSelectPackage }: PackagesProps) {
-    const packages = usePackages();
+    const packages = getPackages();
     const ref = useRef(null);
     const inView = useInView(ref, { once: true, margin: "-80px" });
 
@@ -24,8 +24,8 @@ export default function Packages({ onSelectPackage }: PackagesProps) {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Your Stay</p>
-                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        Choose Your <em style={{ color: "var(--color-gold)" }}>Package</em>
+                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        Choose Your <em className="grad-em">Package</em>
                     </h2>
                     <p className="mt-4 text-sm" style={{ color: "var(--color-text-muted)" }}>
                         Food is not included. Prices are per night.
@@ -36,7 +36,7 @@ export default function Packages({ onSelectPackage }: PackagesProps) {
                     {packages.map((pkg, i) => (
                         <motion.div
                             key={pkg.id}
-                            className="relative border group hover:shadow-2xl transition-all duration-500"
+                            className="relative border group card-glow overflow-hidden"
                             style={{
                                 borderColor: "var(--color-border)",
                                 background: "var(--color-surface)",
@@ -52,7 +52,7 @@ export default function Packages({ onSelectPackage }: PackagesProps) {
                             <div className="p-10">
                                 {/* Emoji + name */}
                                 <div className="flex items-center gap-4 mb-6">
-                                    <span className="text-4xl">{pkg.emoji}</span>
+                                    {/* <span className="text-4xl">{pkg.emoji}</span> */}
                                     <div>
                                         <h3 className="serif text-2xl font-light" style={{ color: "var(--color-text)" }}>
                                             {pkg.name}
@@ -64,7 +64,7 @@ export default function Packages({ onSelectPackage }: PackagesProps) {
                                 {/* Price */}
                                 <div className="mb-8">
                                     <div className="flex items-baseline gap-2">
-                                        <span className="serif text-5xl font-light" style={{ color: "var(--color-gold)" }}>
+                                        <span className="serif text-5xl font-light" style={{ color: "var(--color-accent-text)" }}>
                                             {formatCurrency(pkg.pricePerNight)}
                                         </span>
                                         <span className="text-sm" style={{ color: "var(--color-text-muted)" }}>/night</span>
@@ -78,12 +78,12 @@ export default function Packages({ onSelectPackage }: PackagesProps) {
                                 <ul className="space-y-3 mb-8">
                                     {pkg.features.map((f) => (
                                         <li key={f} className="flex items-center gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                                            <Check size={14} style={{ color: "var(--color-gold)" }} className="shrink-0" />
+                                            <Check size={14} style={{ color: "var(--color-accent-text)" }} className="shrink-0" />
                                             {f}
                                         </li>
                                     ))}
                                     <li className="flex items-center gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                                        <Check size={14} style={{ color: "var(--color-gold)" }} className="shrink-0" />
+                                        <Check size={14} style={{ color: "var(--color-accent-text)" }} className="shrink-0" />
                                         Food: Not Included
                                     </li>
                                 </ul>

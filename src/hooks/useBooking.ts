@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
-import { usePackages, HavenPackage } from "../data/packages";
+import { getPackages, HavenPackage } from "../data/packages";
 import { calculateNights, calculatePrice, PriceBreakdown } from "../utils/priceCalculator";
-import { useBlockedDates, isRangeAvailable } from "../data/availability";
 
 export interface BookingFormData {
     // Guest details
@@ -47,8 +46,7 @@ export function useBooking(initialPackageId?: string) {
         step: "form",
     });
 
-    const packages = usePackages();
-    const blockedDates = useBlockedDates();
+    const packages = getPackages();
 
     const updateField = useCallback(
         <K extends keyof BookingFormData>(field: K, value: BookingFormData[K]) => {
@@ -102,11 +100,6 @@ export function useBooking(initialPackageId?: string) {
             errors.checkOut = "Check-out must be after check-in" as never;
         }
 
-        if (formData.checkIn && formData.checkOut && formData.checkOut > formData.checkIn &&
-            !isRangeAvailable(formData.checkIn, formData.checkOut, blockedDates)) {
-            errors.checkIn = "Some of these dates are already booked. Please choose other dates." as never;
-        }
-
         if (formData.guests < 1) errors.guests = "At least 1 guest required";
         if (selectedPackage && formData.guests > selectedPackage.guests) {
             errors.guests = `${selectedPackage.name} allows up to ${selectedPackage.guests} guests`;
@@ -114,7 +107,7 @@ export function useBooking(initialPackageId?: string) {
 
         setState((prev) => ({ ...prev, errors }));
         return Object.keys(errors).length === 0;
-    }, [state, blockedDates]);
+    }, [state]);
 
     const goToSummary = useCallback(() => {
         if (validate()) {
@@ -141,10 +134,5 @@ export function useBooking(initialPackageId?: string) {
         });
     }, []);
 
-    const unavailable =
-        !!state.formData.checkIn && !!state.formData.checkOut &&
-        state.formData.checkOut > state.formData.checkIn &&
-        !isRangeAvailable(state.formData.checkIn, state.formData.checkOut, blockedDates);
-
-    return { state, packages, blockedDates, unavailable, updateField, goToSummary, goBack, markSent, reset };
+    return { state, packages, updateField, goToSummary, goBack, markSent, reset };
 }

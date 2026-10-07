@@ -9,13 +9,24 @@ export default function Footer() {
     const year = new Date().getFullYear();
 
     return (
-        <footer style={{ background: "var(--color-bg-alt)", borderTop: "1px solid var(--color-border)" }}>
-            <div className="max-w-7xl mx-auto px-6 py-16">
+        <footer
+            className="relative overflow-hidden"
+            style={{
+                background: "linear-gradient(160deg, #04222a 0%, #0a3b42 55%, #123f33 100%)",
+                // re-map tokens so every child reads correctly on the dark band
+                ["--color-text" as string]: "#f0fbf8",
+                ["--color-text-muted" as string]: "#b6dcd6",
+                ["--color-accent-text" as string]: "#ffc42e",
+                ["--color-border" as string]: "rgba(94,234,212,0.22)",
+            }}
+        >
+            <div className="absolute -top-24 right-0 w-96 h-96 rounded-full blur-3xl opacity-20 pointer-events-none" style={{ background: "#ffb703" }} />
+            <div className="relative max-w-7xl mx-auto px-6 py-16">
                 <div className="grid md:grid-cols-3 gap-12 mb-12">
                     {/* Brand */}
                     <div>
                         <p className="serif text-3xl font-light mb-2 tracking-widest" style={{ color: "var(--color-text)" }}>
-                            <span style={{ color: "var(--color-gold)" }}>H</span>AVEN
+                            <span style={{ color: "var(--color-accent-text)" }}>H</span>AVEN
                         </p>
                         <p className="text-sm leading-relaxed" style={{ color: "var(--color-text-muted)" }}>
                             {siteConfig.tagline}
@@ -78,11 +89,11 @@ export default function Footer() {
                     <p className="text-xs" style={{ color: "var(--color-text-muted)" }}>
                         © {year} Haven. All rights reserved.
                     </p>
-                    <Link to="/admin"
+                    {/* <Link to="/admin"
                         className="text-xs hover:opacity-70 transition"
                         style={{ color: "var(--color-text-muted)" }}>
                         Admin
-                    </Link>
+                    </Link> */}
                 </div>
             </div>
         </footer>

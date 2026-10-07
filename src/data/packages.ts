@@ -1,11 +1,7 @@
-import { useSyncExternalStore } from "react";
-import { doc, onSnapshot, setDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
-
 // ============================================================
 // HAVEN — PACKAGE DATA
 // Initial package prices as specified by the owner.
-// Live prices/details are loaded from Firestore (settings/packages).
+// Admin can override via LocalStorage.
 // ============================================================
 
 export interface HavenPackage {
@@ -57,9 +53,9 @@ export const defaultPackages: HavenPackage[] = [
     },
 ];
 
-const STORAGE_KEY = "haven_packages"; // local cache of the last known live data
+const STORAGE_KEY = "haven_packages";
 
-function loadCache(): HavenPackage[] {
+export function getPackages(): HavenPackage[] {
     try {
         const stored = localStorage.getItem(STORAGE_KEY);
         if (stored) return JSON.parse(stored) as HavenPackage[];
@@ -69,39 +65,6 @@ function loadCache(): HavenPackage[] {
     return defaultPackages;
 }
 
-let current: HavenPackage[] = loadCache();
-const listeners = new Set<() => void>();
-
-function setCurrent(next: HavenPackage[]) {
-    current = next;
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(next)); } catch { /* ignore */ }
-    listeners.forEach((l) => l());
-}
-
-export function getPackages(): HavenPackage[] {
-    return current;
-}
-
-const subscribe = (cb: () => void) => { listeners.add(cb); return () => { listeners.delete(cb); }; };
-
-/** React hook: re-renders whenever packages change (live). */
-export const usePackages = () => useSyncExternalStore(subscribe, getPackages);
-
-let started = false;
-export function startPackagesSync() {
-    if (started || !db) return;
-    started = true;
-    onSnapshot(
-        doc(db, "settings", "packages"),
-        (snap) => {
-            if (snap.exists()) setCurrent((snap.data().items as HavenPackage[]) ?? defaultPackages);
-        },
-        (err) => console.error("Packages sync failed", err)
-    );
-}
-
-/** Admin only (Firestore rules enforce this). */
-export async function savePackages(packages: HavenPackage[]): Promise<void> {
-    if (!db) throw new Error("Firebase is not configured");
-    await setDoc(doc(db, "settings", "packages"), { items: packages });
+export function savePackages(packages: HavenPackage[]): void {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(packages));
 }

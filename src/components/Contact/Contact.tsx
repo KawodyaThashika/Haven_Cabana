@@ -41,8 +41,8 @@ export default function Contact() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Get In Touch</p>
-                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        Let's Plan Your <em style={{ color: "var(--color-gold)" }}>Escape</em>
+                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        Let's Plan Your <em className="grad-em">Escape</em>
                     </h2>
                 </motion.div>
 
@@ -52,14 +52,14 @@ export default function Contact() {
                         <motion.button
                             key={c.label}
                             onClick={c.action}
-                            className="p-8 text-center border group hover:shadow-xl transition-all duration-400"
+                            className="p-8 text-center border group card-glow"
                             style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
                             initial={{ opacity: 0, y: 30 }}
                             animate={inView ? { opacity: 1, y: 0 } : {}}
                             transition={{ delay: i * 0.1, duration: 0.7 }}
                             whileHover={{ y: -6 }}
                         >
-                            <div className="flex justify-center mb-4 transition-colors duration-300" style={{ color: "var(--color-gold)" }}>
+                            <div className="flex justify-center mb-4 transition-colors duration-300" style={{ color: "var(--color-accent-text)" }}>
                                 {c.icon}
                             </div>
                             <p className="section-label mb-1">{c.label}</p>
@@ -77,7 +77,7 @@ export default function Contact() {
                     transition={{ delay: 0.4, duration: 0.7 }}
                 >
                     <div className="flex items-center gap-3 text-sm" style={{ color: "var(--color-text-muted)" }}>
-                        <MapPin size={16} style={{ color: "var(--color-gold)" }} />
+                        <MapPin size={16} style={{ color: "var(--color-accent-text)" }} />
                         {siteConfig.location}
                     </div>
                     <div className="flex items-center gap-4">

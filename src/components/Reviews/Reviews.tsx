@@ -23,8 +23,8 @@ export default function Reviews() {
                     transition={{ duration: 0.8 }}
                 >
                     <p className="section-label mb-4">Guest Stories</p>
-                    <h2 className="serif text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
-                        What Guests Say About <em style={{ color: "var(--color-gold)" }}>Haven</em>
+                    <h2 className="serif title-flourish text-4xl md:text-5xl font-light" style={{ color: "var(--color-text)" }}>
+                        What Guests Say About <em className="grad-em">Haven</em>
                     </h2>
                     <p className="text-xs mt-3" style={{ color: "var(--color-text-muted)" }}>
                         Sample reviews — will be replaced with real guest testimonials
@@ -36,7 +36,7 @@ export default function Reviews() {
                     <AnimatePresence mode="wait">
                         <motion.div
                             key={idx}
-                            className="p-10 md:p-14 text-center border"
+                            className="p-10 md:p-14 text-center border card-glow"
                             style={{ borderColor: "var(--color-border)", background: "var(--color-surface)" }}
                             initial={{ opacity: 0, x: 40 }}
                             animate={{ opacity: 1, x: 0 }}
@@ -46,7 +46,7 @@ export default function Reviews() {
                             {/* Stars */}
                             <div className="flex justify-center gap-1 mb-6">
                                 {Array.from({ length: current.rating }).map((_, i) => (
-                                    <Star key={i} size={16} fill="currentColor" style={{ color: "var(--color-gold)" }} />
+                                    <Star key={i} size={16} fill="currentColor" style={{ color: "var(--color-accent-text)" }} />
                                 ))}
                             </div>
 

@@ -1,9 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Calendar, Users, Package, ChevronDown } from "lucide-react";
-import { usePackages } from "../../data/packages";
-import { useBlockedDates, isRangeAvailable } from "../../data/availability";
-import { parseDateInput } from "../../utils/dates";
+import { getPackages } from "../../data/packages";
 import { format } from "date-fns";
 
 interface BookingBarProps {
@@ -11,9 +9,7 @@ interface BookingBarProps {
 }
 
 export default function BookingBar({ onSearch }: BookingBarProps) {
-    const packages = usePackages();
-    const blocked = useBlockedDates();
-    const [notice, setNotice] = useState("");
+    const packages = getPackages();
     const today = new Date();
     const tomorrow = new Date(today); tomorrow.setDate(today.getDate() + 1);
 
@@ -44,7 +40,7 @@ export default function BookingBar({ onSearch }: BookingBarProps) {
                                 type="date"
                                 value={toInputValue(checkIn)}
                                 min={toInputValue(today)}
-                                onChange={(e) => { const d = parseDateInput(e.target.value); if (d) { setCheckIn(d); setNotice(""); } }}
+                                onChange={(e) => setCheckIn(new Date(e.target.value))}
                                 className="haven-input"
                                 style={{ colorScheme: "auto" }}
                             />
@@ -60,7 +56,7 @@ export default function BookingBar({ onSearch }: BookingBarProps) {
                                 type="date"
                                 value={toInputValue(checkOut)}
                                 min={toInputValue(checkIn)}
-                                onChange={(e) => { const d = parseDateInput(e.target.value); if (d) { setCheckOut(d); setNotice(""); } }}
+                                onChange={(e) => setCheckOut(new Date(e.target.value))}
                                 className="haven-input"
                                 style={{ colorScheme: "auto" }}
                             />
@@ -100,7 +96,7 @@ export default function BookingBar({ onSearch }: BookingBarProps) {
                                 >
                                     <option value="">Any Package</option>
                                     {packages.map((p) => (
-                                        <option key={p.id} value={p.id}>{p.emoji} {p.name}</option>
+                                        <option key={p.id} value={p.id}>{p.name}</option>
                                     ))}
                                 </select>
                                 <ChevronDown size={14} className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" style={{ color: "var(--color-text-muted)" }} />
@@ -109,18 +105,9 @@ export default function BookingBar({ onSearch }: BookingBarProps) {
                     </div>
 
                     {/* CTA */}
-                    {notice && <p className="mt-4 text-xs text-red-400 text-center sm:text-right">{notice}</p>}
                     <div className="mt-6 flex justify-center sm:justify-end">
                         <motion.button
-                            onClick={() => {
-                                if (checkOut <= checkIn) { setNotice("Check-out must be after check-in."); return; }
-                                if (!isRangeAvailable(checkIn, checkOut, blocked)) {
-                                    setNotice("Sorry, those dates are already booked. Please try different dates.");
-                                    return;
-                                }
-                                setNotice("");
-                                onSearch({ checkIn, checkOut, guests, packageId: pkgId });
-                            }}
+                            onClick={() => onSearch({ checkIn, checkOut, guests, packageId: pkgId })}
                             className="btn-primary w-full sm:w-auto text-xs justify-center"
                             whileHover={{ scale: 1.02 }}
                             whileTap={{ scale: 0.97 }}

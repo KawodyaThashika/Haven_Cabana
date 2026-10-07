@@ -96,7 +96,7 @@ body {
   background-clip: text;
   -webkit-text-fill-color: transparent;
   color: transparent;
-  animation: gradientX 7s ease infinite;
+  /* animation: gradientX 7s ease infinite; */
   padding-right: 0.08em;
 }
 
@@ -115,8 +115,8 @@ body {
 /* ── Glassmorphism ───────────────────────────────────────── */
 .glass {
   background: var(--glass-bg);
-  backdrop-filter: blur(18px) saturate(1.5);
-  -webkit-backdrop-filter: blur(18px) saturate(1.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid var(--glass-border);
 }
 
